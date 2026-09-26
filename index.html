@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LunAV Launcher</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="window">
+    <header class="titlebar">
+      <div class="brand-mini">
+        <img src="icon.ico" alt="">
+        <span>LunAV</span>
+      </div>
+      <div class="window-actions">
+        <button id="minimize">—</button>
+        <button id="close">×</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="hero">
+        <div class="glow glow-a"></div>
+        <div class="glow glow-b"></div>
+
+        <div class="hero-copy">
+          <div class="eyebrow"><span class="dot"></span> AI VTUBER COMPANION</div>
+          <h1>Lun<span>AV</span></h1>
+          <p class="subtitle">Your virtual companion, powered by Mythicxn.</p>
+
+          <div class="status-pill">
+            <span class="status-dot"></span>
+            <div>
+              <strong>Ready to launch</strong>
+              <small>Offline mode available</small>
+            </div>
+          </div>
+
+          <button class="start-btn" id="start">
+            <span class="play">▶</span>
+            <span>
+              <b>START LUNAV</b>
+              <small>Launch installed version</small>
+            </span>
+            <span class="arrow">→</span>
+          </button>
+
+          <div class="update-row">
+            <span id="updateStatus">Version 1.0.0 · Up to date</span>
+            <button id="check">Check for updates</button>
+          </div>
+        </div>
+
+        <div class="character-card">
+          <div class="orb"></div>
+          <div class="avatar-ring">
+            <img src="icon.ico" alt="LunAV">
+          </div>
+          <div class="character-name">AKURO</div>
+          <div class="character-role">Main AI Model</div>
+          <div class="chips">
+            <span>AI Ready</span>
+            <span>Local</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="bottom-grid">
+        <div class="info-card">
+          <div class="card-icon">↻</div>
+          <div>
+            <small>UPDATE CHANNEL</small>
+            <strong>Stable</strong>
+            <p>Launcher will check GitHub when internet is available.</p>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="card-icon">◉</div>
+          <div>
+            <small>INSTALLED VERSION</small>
+            <strong>v1.0.0</strong>
+            <p>Your local LunAV installation stays available offline.</p>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="card-icon">✓</div>
+          <div>
+            <small>USER DATA</small>
+            <strong>Protected</strong>
+            <p>Launcher updates won't remove your app data.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+<script>
+const updateStatus = document.getElementById('updateStatus');
+const startBtn = document.getElementById('start');
+const checkBtn = document.getElementById('check');
+const statusStrong = document.querySelector('.status-pill strong');
+const statusSmall = document.querySelector('.status-pill small');
+const installedStrong = document.querySelectorAll('.info-card strong')[1];
+
+function setBusy(busy) { startBtn.disabled = busy; checkBtn.disabled = busy; startBtn.style.opacity = busy ? '.65' : '1'; }
+function setStatus(data) {
+  updateStatus.textContent = data.message || '';
+  if (data.kind === 'success') { statusStrong.textContent='Ready to launch'; statusSmall.textContent='Online / offline mode available'; }
+  else if (data.kind === 'warning') { statusStrong.textContent='Offline mode'; statusSmall.textContent='Using the last working version'; }
+  else if (data.kind === 'error') { statusStrong.textContent='Update unavailable'; statusSmall.textContent='The local version is kept when possible'; }
+  else { statusStrong.textContent='Updating LunAV'; statusSmall.textContent='Please keep the launcher open'; }
+}
+window.launcher?.onStatus(setStatus);
+
+document.getElementById('start').addEventListener('click', async () => {
+  setBusy(true); updateStatus.textContent='Launching LunAV…';
+  const result = await window.launcher.start();
+  if (!result.ok) updateStatus.textContent=result.message || 'Unable to launch LunAV.';
+  setBusy(false);
+});
+
+document.getElementById('check').addEventListener('click', async () => {
+  setBusy(true); updateStatus.textContent='Checking GitHub for updates…';
+  const result = await window.launcher.check();
+  if (result.ok && result.installed?.version) installedStrong.textContent='v' + result.installed.version.replace(/^v/i,'');
+  if (!result.ok) updateStatus.textContent = result.message || 'Update check failed.';
+  setBusy(false);
+});
+
+document.getElementById('minimize').addEventListener('click', () => window.launcher?.minimize());
+document.getElementById('close').addEventListener('click', () => window.launcher?.close());
+
+window.addEventListener('DOMContentLoaded', async () => {
+  const info = await window.launcher?.info();
+  if (info?.installed?.version) {
+    installedStrong.textContent = 'v' + info.installed.version.replace(/^v/i,'');
+    updateStatus.textContent = 'Version ' + info.installed.version.replace(/^v/i,'') + ' · Checking GitHub…';
+  } else {
+    updateStatus.textContent = 'No local version · Checking GitHub…';
+  }
+});
+</script>
+</body>
+</html>
