@@ -10,13 +10,13 @@ Launcher kiểm tra bản LunAV trên GitHub, tải `LunAV.exe` vào thư mục 
 
 1. Cài Node.js 22 rồi chạy `npm ci`.
 2. Chạy `npm run build`; file `dist/LunAV-Launcher.exe` sẽ được tạo.
-3. Tạo GitHub Release với tag bắt đầu bằng `v` (ví dụ `v1.0.2`). GitHub Actions sẽ build source của tag và tải `LunAV-Launcher.exe` lên release.
+3. Tạo GitHub Release với tag version không có tiền tố `v` (ví dụ `1.0.2`). GitHub Actions sẽ build source của tag và tải `LunAV-Launcher.exe` lên release.
 4. Chỉ phát hành file do workflow tạo. Workflow hiện chưa ký Authenticode; chỉ cấu hình ký nếu dịch vụ ký chấp nhận dự án.
 
 ### Cập nhật LunAV
 
 - Launcher kiểm tra GitHub Releases của [`Mythicxn/LunAV`](https://github.com/Mythicxn/LunAV) (cấu hình trong `main.js`), chọn asset `LunAV.exe`, tải về và chạy app.
-- Chỉ dùng stable release có tag `vX.Y.Z` và đính kèm asset `LunAV.exe`.
+- Chỉ dùng stable release có tag `X.Y.Z` và đính kèm asset `LunAV.exe`.
 - Khi gỡ LunAV, launcher xóa các bản app đã tải nhưng giữ dữ liệu/cài đặt riêng của app.
 
 ### Gỡ bỏ
@@ -67,13 +67,13 @@ The launcher checks GitHub for LunAV releases, downloads `LunAV.exe` into its ow
 
 1. Install Node.js 22 and run `npm ci`.
 2. Run `npm run build` to create `dist/LunAV-Launcher.exe`.
-3. Create a GitHub Release with a tag beginning with `v` (for example, `v1.0.2`). GitHub Actions builds the source at the release tag and uploads `LunAV-Launcher.exe` to the release.
+3. Create a GitHub Release with a version tag without a `v` prefix (for example, `1.0.2`). GitHub Actions builds the source at the release tag and uploads `LunAV-Launcher.exe` to the release.
 4. Distribute only the artifact produced by the workflow. The workflow does not currently apply an Authenticode signature; signing should be configured only if a signing provider accepts the project.
 
 ### LunAV updates
 
 - The launcher checks GitHub Releases for [`Mythicxn/LunAV`](https://github.com/Mythicxn/LunAV), as configured in `main.js`, selects the `LunAV.exe` asset, downloads it, and starts the app.
-- Publish stable releases using `vX.Y.Z` tags and attach the `LunAV.exe` asset.
+- Publish stable releases using `X.Y.Z` tags and attach the `LunAV.exe` asset.
 - Uninstalling LunAV removes app versions downloaded by the launcher while preserving LunAV's separate user data and settings.
 
 ### Uninstall
