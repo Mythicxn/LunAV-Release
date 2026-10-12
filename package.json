@@ -1,6 +1,6 @@
 {
   "name": "lunav-launcher",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "LunAV Launcher",
   "main": "main.js",
   "scripts": {
@@ -14,7 +14,7 @@
   "build": {
     "appId": "com.mythicxn.lunav.launcher",
     "productName": "LunAV Launcher",
-    "artifactName": "LunAV-Launcher-win-x64.${ext}",
+    "artifactName": "LunAV-Launcher.${ext}",
     "win": {
       "icon": "icon.ico",
       "target": [

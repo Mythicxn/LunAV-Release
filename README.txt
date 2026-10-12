@@ -4,9 +4,9 @@ Phat hanh
 1. Chay `npm install` trong thu muc nay.
 2. Chay `npm run build`; file portable duoc tao trong `dist`.
 3. Tao GitHub Release trong repo chua launcher, dung tag `vX.Y.Z`, roi tai len
-   file `LunAV-Launcher-win-x64.exe`.
+   file `LunAV-Launcher.exe`.
 4. Dat nut tai tren website/repo khac toi URL:
-   `https://github.com/<owner>/<launcher-repo>/releases/latest/download/LunAV-Launcher-win-x64.exe`.
+   `https://github.com/<owner>/<launcher-repo>/releases/latest/download/LunAV-Launcher.exe`.
 
 Cap nhat LunAV
 - Launcher dang kiem tra GitHub Releases cua `Mythicxn/LunAV` (khai bao trong
