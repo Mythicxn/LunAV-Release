@@ -28,7 +28,7 @@
     },
     "files": [
       "**/*",
-      "!README.txt"
+      "!README.md"
     ]
   }
 }
