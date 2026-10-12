@@ -9,6 +9,7 @@ body {
   overflow: hidden;
 }
 .window {
+  position: relative;
   width: 100vw; height: 100vh;
   background:
     radial-gradient(circle at 78% 22%, rgba(166, 91, 255, .15), transparent 28%),
@@ -28,6 +29,38 @@ body {
   color:#aaa9b8; font-size:17px; cursor:pointer;
 }
 .window-actions button:hover { background:rgba(255,255,255,.08); color:white; }
+.window-actions #menuToggle { font-size:15px; }
+.menu-popover {
+  position:absolute; z-index:10; top:52px; right:12px; width:220px; padding:6px;
+  border:1px solid rgba(255,255,255,.1); border-radius:12px;
+  background:#151621; box-shadow:0 16px 40px rgba(0,0,0,.42);
+}
+.menu-popover[hidden] { display:none; }
+.menu-popover button {
+  width:100%; padding:11px 12px; border:0; border-radius:8px; text-align:left;
+  color:#e8e7ef; background:transparent; font:inherit; font-size:12px; cursor:pointer;
+}
+.menu-popover button:hover { background:rgba(255,255,255,.07); }
+.menu-popover .danger-menu-item { color:#ff9b9b; }
+.menu-popover button:disabled { opacity:.5; cursor:not-allowed; }
+
+.app-dialog {
+  width:min(520px, calc(100vw - 40px)); padding:0; border:1px solid rgba(255,255,255,.12);
+  border-radius:18px; color:#f6f5fb; background:#11121c; box-shadow:0 24px 80px rgba(0,0,0,.55);
+}
+.app-dialog::backdrop { background:rgba(3,4,10,.72); }
+.dialog-content { padding:24px; }
+.dialog-content h2 { margin:0 0 14px; font-size:19px; }
+.dialog-content p { color:#b4b2c0; font-size:12px; line-height:1.65; }
+.dialog-content strong { color:#f6f5fb; }
+.dialog-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:22px; }
+.dialog-button {
+  padding:9px 14px; border:1px solid rgba(255,255,255,.12); border-radius:9px;
+  color:#efedf5; background:rgba(255,255,255,.06); font:inherit; font-size:12px; cursor:pointer;
+}
+.dialog-button:hover { background:rgba(255,255,255,.11); }
+.dialog-button.danger-button { color:#fff; border-color:#a83f4d; background:#a83f4d; }
+.dialog-button.danger-button:hover { background:#c34c5b; }
 
 .content { padding: 28px 34px 30px; height: calc(100vh - 46px); }
 .hero {

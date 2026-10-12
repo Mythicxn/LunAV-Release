@@ -13,6 +13,7 @@ const RELEASE_API = `https://api.github.com/repos/${OWNER}/${REPO}/releases/late
 
 let mainWindow;
 let busy = false;
+let uninstalling = false;
 
 // Chỉ cho phép một Launcher chạy cùng lúc.
 const gotSingleInstanceLock = app.requestSingleInstanceLock();
@@ -164,6 +165,7 @@ async function installRelease(release) {
 }
 
 async function checkForUpdates() {
+  if (uninstalling) return { ok:false, message:'LunAV đang được gỡ cài đặt.' };
   if (busy) return { ok:false, message:'Launcher đang xử lý một tác vụ khác.' };
   busy = true;
   try {
@@ -191,7 +193,9 @@ async function checkForUpdates() {
 }
 
 function launchInstalled() {
+  if (uninstalling) return Promise.reject(new Error('LunAV đang được gỡ cài đặt.'));
   return getInstalled().then(installed => {
+    if (uninstalling) throw new Error('LunAV đang được gỡ cài đặt.');
     if (!installed.exe) throw new Error('Chưa có bản LunAV cục bộ. Hãy kiểm tra cập nhật khi có mạng.');
     const child = spawn(installed.exe, [], { detached:true, stdio:'ignore', windowsHide:false, cwd:path.dirname(installed.exe) });
     child.unref();
@@ -202,7 +206,7 @@ function launchInstalled() {
 
 function createWindow() {
   mainWindow = new BrowserWindow({ width:980, height:620, minWidth:860, minHeight:560, frame:false, resizable:true, backgroundColor:'#090a12', icon:path.join(__dirname,'icon.ico'), webPreferences:{ contextIsolation:true, nodeIntegration:false, preload:path.join(__dirname,'preload.js') } });
-  mainWindow.loadFile('index.html');
+  mainWindow.loadFile(path.join(__dirname, 'index.html'));
 }
 
 if (gotSingleInstanceLock) {
@@ -218,3 +222,22 @@ ipcMain.handle('launcher:start', async () => {
   catch (err) { sendStatus(err.message, 'error', null); return { ok:false, message:err.message }; }
 });
 ipcMain.handle('launcher:info', async () => ({ installed: await getInstalled() }));
+ipcMain.handle('launcher:uninstall', async () => {
+  if (busy || uninstalling) {
+    return { ok:false, message:'Launcher đang xử lý một tác vụ khác.' };
+  }
+
+  uninstalling = true;
+  try {
+    await fsp.rm(versionsRoot(), { recursive:true, force:true });
+    await fsp.mkdir(versionsRoot(), { recursive:true });
+    await writeState({ currentVersion:null });
+    sendStatus('Đã gỡ LunAV. Dữ liệu người dùng được giữ nguyên.', 'success', 100);
+    return { ok:true, message:'Đã gỡ LunAV. Dữ liệu người dùng được giữ nguyên.' };
+  } catch (err) {
+    sendStatus(`Không thể gỡ LunAV: ${err.message}`, 'error', null);
+    return { ok:false, message:`Không thể gỡ LunAV: ${err.message}` };
+  } finally {
+    uninstalling = false;
+  }
+});

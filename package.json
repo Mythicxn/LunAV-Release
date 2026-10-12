@@ -14,7 +14,7 @@
   "build": {
     "appId": "com.mythicxn.lunav.launcher",
     "productName": "LunAV Launcher",
-    "artifactName": "LunAV-Launcher-v${version}-win-x64.${ext}",
+    "artifactName": "LunAV-Launcher-win-x64.${ext}",
     "win": {
       "icon": "icon.ico",
       "target": [

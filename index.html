@@ -14,10 +14,16 @@
         <span>LunAV</span>
       </div>
       <div class="window-actions">
+        <button id="menuToggle" aria-label="Mở menu" aria-expanded="false" aria-controls="menuPopover">☰</button>
         <button id="minimize">—</button>
         <button id="close">×</button>
       </div>
     </header>
+
+    <div class="menu-popover" id="menuPopover" hidden>
+      <button id="openLicenseInfo" type="button">Thông tin &amp; giấy phép</button>
+      <button id="openUninstall" class="danger-menu-item" type="button">Gỡ cài đặt LunAV</button>
+    </div>
 
     <main class="content">
       <section class="hero">
@@ -95,15 +101,45 @@
     </main>
   </div>
 
+  <dialog class="app-dialog" id="licenseDialog" aria-labelledby="licenseTitle">
+    <div class="dialog-content">
+      <h2 id="licenseTitle">Thông tin &amp; giấy phép</h2>
+      <p>Launcher kết nối GitHub để kiểm tra bản phát hành, tải LunAV.exe và lưu bản tải trong thư mục dữ liệu riêng của launcher.</p>
+      <p><strong>Giấy phép mã nguồn launcher:</strong> MIT License (Copyright (c) 2026 Mythicxn). Giấy phép cho phép sử dụng, sửa đổi, phân phối và sử dụng thương mại. Khi phân phối mã nguồn hoặc phần đáng kể của mã nguồn, cần giữ thông báo bản quyền và toàn văn giấy phép.</p>
+      <p>License này áp dụng cho mã nguồn trong repo LunAV-Release trong phạm vi chủ dự án có quyền cấp phép. Nó không tự áp dụng cho ứng dụng LunAV, tài sản bên thứ ba hoặc các dịch vụ mà launcher kết nối.</p>
+      <p>Điều khoản sử dụng riêng và chính sách quyền riêng tư chưa được cung cấp trong launcher.</p>
+      <div class="dialog-actions">
+        <button class="dialog-button" type="button" data-close-dialog="licenseDialog">Đóng</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog class="app-dialog" id="uninstallDialog" aria-labelledby="uninstallTitle">
+    <div class="dialog-content">
+      <h2 id="uninstallTitle">Gỡ LunAV khỏi máy này?</h2>
+      <p>Thao tác này sẽ xóa các bản LunAV mà launcher đã tải. Dữ liệu và cài đặt riêng của LunAV sẽ được giữ nguyên.</p>
+      <p>Nếu LunAV đang chạy, hãy đóng ứng dụng trước khi gỡ.</p>
+      <p>LunAV Launcher là ứng dụng portable, không được cài vào Windows. Sau khi gỡ LunAV, hãy đóng launcher rồi xóa file launcher đã tải nếu bạn không muốn giữ nó.</p>
+      <div class="dialog-actions">
+        <button class="dialog-button" type="button" data-close-dialog="uninstallDialog">Hủy</button>
+        <button class="dialog-button danger-button" id="confirmUninstall" type="button">Gỡ cài đặt</button>
+      </div>
+    </div>
+  </dialog>
+
 <script>
 const updateStatus = document.getElementById('updateStatus');
 const startBtn = document.getElementById('start');
 const checkBtn = document.getElementById('check');
+const uninstallBtn = document.getElementById('openUninstall');
+const menuToggle = document.getElementById('menuToggle');
+const menuPopover = document.getElementById('menuPopover');
 const statusStrong = document.querySelector('.status-pill strong');
 const statusSmall = document.querySelector('.status-pill small');
 const installedStrong = document.querySelectorAll('.info-card strong')[1];
 
-function setBusy(busy) { startBtn.disabled = busy; checkBtn.disabled = busy; startBtn.style.opacity = busy ? '.65' : '1'; }
+function setBusy(busy) { startBtn.disabled = busy; checkBtn.disabled = busy; uninstallBtn.disabled = busy; startBtn.style.opacity = busy ? '.65' : '1'; }
+function closeMenu() { menuPopover.hidden = true; menuToggle.setAttribute('aria-expanded', 'false'); }
 function setStatus(data) {
   updateStatus.textContent = data.message || '';
   if (data.kind === 'success') { statusStrong.textContent='Ready to launch'; statusSmall.textContent='Online / offline mode available'; }
@@ -113,19 +149,60 @@ function setStatus(data) {
 }
 window.launcher?.onStatus(setStatus);
 
+menuToggle.addEventListener('click', () => {
+  menuPopover.hidden = !menuPopover.hidden;
+  menuToggle.setAttribute('aria-expanded', String(!menuPopover.hidden));
+});
+document.addEventListener('click', event => {
+  if (!menuPopover.contains(event.target) && !menuToggle.contains(event.target)) closeMenu();
+});
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') closeMenu();
+});
+document.getElementById('openLicenseInfo').addEventListener('click', () => {
+  closeMenu();
+  document.getElementById('licenseDialog').showModal();
+});
+uninstallBtn.addEventListener('click', () => {
+  closeMenu();
+  document.getElementById('uninstallDialog').showModal();
+});
+document.querySelectorAll('[data-close-dialog]').forEach(button => {
+  button.addEventListener('click', () => document.getElementById(button.dataset.closeDialog).close());
+});
+
 document.getElementById('start').addEventListener('click', async () => {
   setBusy(true); updateStatus.textContent='Launching LunAV…';
-  const result = await window.launcher.start();
-  if (!result.ok) updateStatus.textContent=result.message || 'Unable to launch LunAV.';
-  setBusy(false);
+  try {
+    const result = await window.launcher.start();
+    if (!result.ok) updateStatus.textContent=result.message || 'Unable to launch LunAV.';
+  } catch (error) {
+    updateStatus.textContent=error.message || 'Unable to launch LunAV.';
+  } finally { setBusy(false); }
 });
 
 document.getElementById('check').addEventListener('click', async () => {
   setBusy(true); updateStatus.textContent='Checking GitHub for updates…';
-  const result = await window.launcher.check();
-  if (result.ok && result.installed?.version) installedStrong.textContent='v' + result.installed.version.replace(/^v/i,'');
-  if (!result.ok) updateStatus.textContent = result.message || 'Update check failed.';
-  setBusy(false);
+  try {
+    const result = await window.launcher.check();
+    if (result.ok && result.installed?.version) installedStrong.textContent='v' + result.installed.version.replace(/^v/i,'');
+    if (!result.ok) updateStatus.textContent = result.message || 'Update check failed.';
+  } catch (error) {
+    updateStatus.textContent=error.message || 'Update check failed.';
+  } finally { setBusy(false); }
+});
+
+document.getElementById('confirmUninstall').addEventListener('click', async () => {
+  document.getElementById('uninstallDialog').close();
+  setBusy(true);
+  updateStatus.textContent='Removing LunAV…';
+  try {
+    const result = await window.launcher.uninstall();
+    updateStatus.textContent = result.message;
+    if (result.ok) installedStrong.textContent='Not installed';
+  } catch (error) {
+    updateStatus.textContent=error.message || 'Unable to uninstall LunAV.';
+  } finally { setBusy(false); }
 });
 
 document.getElementById('minimize').addEventListener('click', () => window.launcher?.minimize());
